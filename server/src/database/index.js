@@ -1,11 +1,8 @@
-const { drizzle } = require("drizzle-orm/supabase");
+const { drizzle } = require("drizzle-orm/postgres-js");
+const postgres = require("postgres");
 const schema = require("./schema.js");
-const { createClient } = require("@supabase/supabase-js");
 require("dotenv").config();
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-const db = drizzle(supabase, { schema });
+const client = postgres(process.env.DATABASE_URL);
+const db = drizzle(client, { schema });
 module.exports = { db };
