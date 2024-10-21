@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const res = await api.post("/api/auth/login", { email, password });
+      const res = await api.post("/auth/login", { email, password });
       Cookies.set("token", res.data.token, {
         expires: 1, //new Date(Date.now() + 5 * 1000)
         secure: process.env.NODE_ENV === "production", // Use secure cookies in production
@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
         setIsReady(false);
         const token = Cookies.get("token");
         if (!token) return;
-        const res = await api.get("/users/me", {
+        const res = await api.get("/user/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

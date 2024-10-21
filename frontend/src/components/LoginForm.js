@@ -15,20 +15,12 @@ export const LoginForm = () => {
     },
     validationSchema: yup.object({
       email: yup
-        .string()
-        .email("Invalid email format")
-        .required("Email is required"),
+        .string(),
       password: yup
         .string()
-        .min(2, "Password must be at least 6 characters")
-        .required("Password is required"),
     }),
     onSubmit: (values) => {
       login(values.email, values.password);
-      // toast(`{
-      //   email: ${values.email}
-      //   password: ${values.password}
-      //   }`);
     },
   });
   const showError = (field) =>
