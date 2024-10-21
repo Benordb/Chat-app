@@ -17,9 +17,8 @@ export default function Home() {
         return;
       }
       const res = await api.post("/user/message", {
-        to: "6711b25921582f95bc28ad60",
-        message,
-        from: "671078d2714d61d64dfb7ef7"
+        to: "6715c0b25a9afcfe4c6de441",
+        message
       }, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -42,7 +41,7 @@ export default function Home() {
           console.warn("No token found");
           return;
         }
-        const res = await api.get(`/user/message/user/6711b25921582f95bc28ad60`, {
+        const res = await api.get(`/user/message/user/${user.user._id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -62,7 +61,7 @@ export default function Home() {
         <div className="w-80 bg-neutral-700 h-full"></div>
         <div className="w-full h-full flex flex-col justify-between">
           <div className="h-24 bg-neutral-700 w-full"></div>
-          <div className="h-full  w-full overflow-hidden">{!messages ? null : messages.map((item, index) => <div key={index}>{item.message}</div>)}</div>
+          <div className="h-full  w-full overflow-hidden">{!messages ? null : messages.map((item, index) => <div className={item.from === user.user._id ? "text-green-400 text-end" : null} key={index}>{item.message}</div>)}</div>
           <div className="flex gap-2 w-full px-12 pb-6">
             <input
               value={message}
