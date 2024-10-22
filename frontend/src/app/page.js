@@ -3,12 +3,27 @@ import { useAuth } from "@/components/utils/authProvider";
 import Cookies from "js-cookie";
 import { api } from "@/lib/axios";
 import { useEffect, useState } from "react";
+import io from "socket.io-client";
+let socket;
 
 export default function Home() {
   const [message, setMessage] = useState()
   const [messages, setMessages] = useState()
 
   const { user } = useAuth();
+
+  useEffect(() => {
+    socket = io("http://localhost:3030");
+
+    socket.on("newMessage", (newMessage) => {
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
   const createMessage = async () => {
     try {
       const token = Cookies.get("token");
@@ -52,6 +67,26 @@ export default function Home() {
       }
     };
     getUserMessagesUserID();
+  }, []);
+  useEffect(() => {
+    const getAllUsers = async () => {
+      try {
+        const token = Cookies.get("token");
+        if (!token) {
+          console.warn("No token found");
+          return;
+        }
+        const res = await api.get(`/user/message/user/${user.user._id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setMessages(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    getAllUsers();
   }, []);
   console.log(messages)
   return (
