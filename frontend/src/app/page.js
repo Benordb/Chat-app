@@ -8,6 +8,8 @@ import io from "socket.io-client";
 export default function Home() {
   const [message, setMessage] = useState();
   const [messages, setMessages] = useState();
+  const [friend, setFriend] = useState(null);
+  const [userTyping, setUserTyping] = useState(null);
 
   const { user } = useAuth();
   const socket = useRef(null);
@@ -27,6 +29,13 @@ export default function Home() {
     socket.current.on("messageReceived", (newMessage) => {
       setMessages((prevMessages) => [...prevMessages, newMessage]);
     });
+
+    socket.current.on("userTyping", (whoTyping) => {
+      if (whoTyping.to === user.user._id) {
+        setUserTyping(whoTyping.from);
+      }
+      setTimeout(() => setUserTyping(null), 2000);
+    });
     return () => {
       if (socket.current) {
         socket.current.disconnect();
@@ -44,7 +53,7 @@ export default function Home() {
       const res = await api.post(
         "/user/message",
         {
-          to: "6715c0b25a9afcfe4c6de441",
+          to: friend,
           message,
         },
         {
@@ -74,7 +83,7 @@ export default function Home() {
           console.warn("No token found");
           return;
         }
-        const res = await api.get(`/user/message/user/${user.user._id}`, {
+        const res = await api.get(`/user/message/user/${friend}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -85,7 +94,7 @@ export default function Home() {
       }
     };
     getUserMessagesUserID();
-  }, []);
+  }, [friend]);
   useEffect(() => {
     const getAllUsers = async () => {
       try {
@@ -99,22 +108,28 @@ export default function Home() {
             Authorization: `Bearer ${token}`,
           },
         });
-        setMessages(res.data);
       } catch (err) {
         console.error(err);
       }
     };
     getAllUsers();
   }, [user]);
-
   return (
     <div className="w-screen h-screen flex gap-4">
       <div className="h-full w-16 bg-neutral-700">navbar</div>
       <div className="w-full h-full flex">
-        <div className="w-80 bg-neutral-700 h-full"></div>
+        <div className="w-80 bg-neutral-700 h-full">
+          <h1>Friends</h1>
+          {user.user.friends.map((item, index) => (
+            <div onClick={() => setFriend(item)} key={index}>
+              {item}
+            </div>
+          ))}
+        </div>
         <div className="w-full h-full flex flex-col justify-between">
           <div className="h-24 bg-neutral-700 w-full"></div>
-          <div className="h-full  w-full overflow-hidden">
+          <div className="h-full  w-full overflow-y-scroll">
+            <div className="text-green-300 text-3xl">{friend}</div>
             {!messages
               ? null
               : messages.map((item, index) => (
@@ -129,6 +144,9 @@ export default function Home() {
                     {item.message}
                   </div>
                 ))}
+            {userTyping ? (
+              <div className="text-green-300 text-xs">Typing...</div>
+            ) : null}
           </div>
           <div className="flex gap-2 w-full px-12 pb-6">
             <input
@@ -136,7 +154,7 @@ export default function Home() {
               onChange={(e) => {
                 socket.current.emit("typing", {
                   from: user.user._id,
-                  to: "6715c0b25a9afcfe4c6de441",
+                  to: friend,
                 });
                 setMessage(e.target.value);
               }}
