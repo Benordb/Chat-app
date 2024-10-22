@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
         setIsReady(false);
         const token = Cookies.get("token");
         if (!token) return;
-        const res = await api.get("/user/me", {
+        const res = await api.get("/user", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
